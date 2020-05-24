@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Elias additions-->
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- init section is always evaluated once per architecture -->
+  <init>
+    <setBoolFromProperty result="bDisableTrackingMode6Dof" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="disableHmd6DofModule" default="false"/>
+    <setBoolFromProperty result="bEnablePaymentModule" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="enablePaymentModule" default="false"/>
+    <setBoolFromProperty result="bForeign" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="isForeign" default="false"/>
+    <setBoolFromProperty result="bEnablePSensor" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="EnablePSensor" default="false"/>
+  </init>
+
+  <!-- optional updates applied to AndroidManifest.xml -->
+  <androidManifestUpdates>
+
+    <if condition="bEnablePaymentModule">
+      <true>
+
+        <setStringFromProperty result="strMerchantID" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="merchantID" default=""/>
+        <setStringFromProperty result="strAppID" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="appID" default=""/>
+        <setStringFromProperty result="strAppKey" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="appKey" default=""/>
+        <setStringFromProperty result="strScope" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="scope" default="get_user_info"/>
+        <setStringFromProperty result="strPayKey" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="payKey" default=""/>
+        
+        <if condition="bForeign">
+          <true>
+            <log text="Copy Pico Payment Infos For Foreign"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_app_id_foreign"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strAppID)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_app_key_foreign"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strAppKey)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_scope_foreign"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strScope)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_merchant_id_foreign"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strMerchantID)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_pay_key_foreign"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strPayKey)"/>
+            <addElement tag="application" name="metaData"/>
+          </true>
+          <false>
+            <log text="Copy Pico Payment Infos For China"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_app_id"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strAppID)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_app_key"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strAppKey)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_scope"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strScope)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_merchant_id"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strMerchantID)"/>
+            <addElement tag="application" name="metaData"/>
+
+            <setElement result="metaData" value="meta-data"/>
+            <addAttribute tag="$metaData" name="android:name" value="pico_pay_key"/>
+            <addAttribute tag="$metaData" name="android:value" value="$S(strPayKey)"/>
+            <addElement tag="application" name="metaData"/>
+          </false>
+        </if>
+      </true>
+    </if>
+
+
+    <addAttribute tag="application"  name="android:hardwareAccelerated" value="false" />
+    <addAttribute tag="activity" name="android:configChanges" value="screenSize|orientation|keyboardHidden|keyboard|navigation" android:hardwareAccelerated="false"/>
+    <addAttribute tag="activity"  name="android:hardwareAccelerated" value="false" />
+    <addElements tag="application">
+      <meta-data android:name="pvr.app.type" android:value="vr" />
+      <meta-data android:name="pvr.display.orientation" android:value="180" />
+      <meta-data android:name="platform_logo" android:value="1"/>
+      <meta-data android:name="loadingtextsize" android:value="16"/>
+      <meta-data android:name="loadingwidth" android:value="500"/>
+      <meta-data android:name="loadingheight" android:value="100"/>
+      <meta-data android:name="loadingmarquee" android:value="1"/>
+      <meta-data android:name="bottommargin" android:value="100"/>
+      <meta-data android:name="marqueecount" android:value="10"/>
+      <meta-data android:name="loadingalign" android:value="left"/>
+    </addElements>
+
+    <if condition="bDisableTrackingMode6Dof">
+      <false>
+        <addElements tag="application">
+          <meta-data android:name="com.pvr.hmd.trackingmode" android:value="6dof" />
+        </addElements>
+      </false>
+      <true>
+        <addElements tag="application">
+          <meta-data android:name="com.pvr.hmd.trackingmode" android:value="3dof" />
+        </addElements>
+      </true>
+    </if>
+
+    <addPermission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <addPermission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <addPermission android:name="android.permission.WRITE_SETTINGS"/>
+    <addPermission android:name="android.permission.INTERNET"/>
+    <addPermission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <addPermission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <addPermission android:name="android.permission.READ_PHONE_STATE"/>
+    <addPermission android:name="com.qti.permission.PROFILER"/>
+    <addPermission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <addPermission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <addPermission android:name="android.permission.CHANGE_CONFIGURATION" />
+  </androidManifestUpdates>
+
+
+  <!-- optional files or directories to copy to Intermediate/Android/APK -->
+  <resourceCopies>
+    <isArch arch="armeabi-v7a">
+      <log text="Copy PicoMobile Libs"/>
+      <copyFile src="$S(PluginDir)/../../Libs/armeabi-v7a/libPvr_UESDK.so"
+			 dst="$S(BuildDir)/libs/armeabi-v7a/libPvr_UESDK.so" />
+    </isArch>
+    <isArch arch="arm64-v8a">
+      <log text="Copy PicoMobile Libs"/>
+      <copyFile src="$S(PluginDir)/../../Libs/arm64-v8a/libPvr_UESDK.so"
+			 dst="$S(BuildDir)/libs/arm64-v8a/libPvr_UESDK.so" />
+    </isArch>
+
+    <copyFile src="$S(PluginDir)/../../Libs/vractivity.jar"
+					dst="$S(BuildDir)/libs/vractivity.jar" />
+    <copyFile src="$S(PluginDir)/../../Libs/pvrjar.jar"
+         dst="$S(BuildDir)/libs/pvrjar.jar" />
+
+    <if condition="bEnablePaymentModule">
+      <true>
+        <copyFile src="$S(PluginDir)/../../Libs/Pico_PaymentSDK_Android_V1.0.24.jar"
+          dst="$S(BuildDir)/libs/Pico_PaymentSDK_Android_V1.0.24.jar" />
+      </true>
+    </if>
+  </resourceCopies>
+
+  <gameActivityImportAdditions>
+    <insert>
+      import android.util.Log;
+      import com.psmart.vrlib.VrActivity;
+      import com.psmart.vrlib.PicovrSDK;
+      import com.psmart.aosoperation.SysActivity;
+      import com.unity3d.player.ExternalDislayForUE;
+      import android.view.View;
+      import android.widget.FrameLayout;
+      import android.app.Instrumentation;
+      import android.hardware.display.DisplayManager;
+      import android.view.Display;
+      import android.os.Handler;
+      import android.os.Message;
+      import java.io.BufferedReader;
+      import java.io.IOException;
+      import java.io.InputStreamReader;
+      import android.net.Uri;
+      import android.os.Build;
+      import android.widget.FrameLayout;
+      import com.picovr.picovrlib.cvcontrollerclient.ControllerClient;
+      import com.picovr.picovrlib.hummingbirdclient.HbClientActivity;
+      import com.psmart.vrlib.VRDataUtils;
+      import android.app.FragmentManager;
+      import android.app.FragmentTransaction;
+      import android.os.Bundle;
+      import com.psmart.vrlib.LoadingFragment;
+      import android.os.RemoteException;
+      import com.pvr.verify.ICallback;
+      import com.pvr.verify.IVerify;
+      import android.content.ComponentName;
+      import android.content.ServiceConnection;
+      import android.os.IBinder;
+      import com.psmart.vrlib.VRConfigUtils;
+      import com.psmart.vrlib.SmsPhoneMonitor;
+      import com.psmart.vrlib.VRResUtils;
+      import com.pvr.PvrManager;//to save more memory
+    </insert>
+    <if condition="bEnablePaymentModule">
+      <true>
+        <insert>
+          import com.pico.loginpaysdk.auth.AccessInfo;
+          import com.pico.loginpaysdk.auth.Callback;
+          import com.pico.loginpaysdk.auth.sso.Login;
+          import com.pico.loginpaysdk.exception.PicoException;
+          import com.pico.loginpaysdk.net.RequestListener;
+          import com.pico.loginpaysdk.utils.PicoAccessTokenKeeper;
+          import com.pico.loginpaysdk.pay.PaySdkCallBack;
+          import com.pico.loginpaysdk.pay.PicoPay;
+          import com.pico.loginpaysdk.pay.model.PayOrder;
+          import com.pico.loginpaysdk.utils.RandomUtil;
+          
+          import android.view.KeyEvent;
+          
+          import android.util.Log;
+        </insert>
+      </true>
+    </if>
+  </gameActivityImportAdditions>
+
+  <gameActivityClassAdditions>
+
+    <insert>
+      public SmsPhoneMonitor smsPhoneMonitor;
+      DisplayManager  mDisplayManager = null;
+      SurfaceView mPresentationView = null;
+      ExternalDislayForUE  mPresentation = null;
+
+      private LoadingFragment loadingFragment = null;
+      private FragmentManager fragmentManager = getFragmentManager();
+
+      FrameLayout mUELayout = null;
+      <!--global Boundary status-->
+      private int globalBoundaryStatus = -1;
+      <!--app Boundary status-->
+      private int appBoundaryStatus = -1;
+      <!--To awake boundary setting app-->
+      public static Handler mhandler = null;
+      <!--if boudary setting app is installed-->
+      private boolean SeeThroughSettingExist = false;
+      <!-- this is config ID -->
+      private final static int CALL_BY_CONFIRMKEY = 53;
+
+      public boolean AndroidThunkJava_IsGearVRApplication()
+      {
+      return true;
+      }
+
+      public boolean AndroidThunkJava_IsOculusMobileApplication()
+      {
+      return true;
+      }
+
+      public VrActivity vrActivity;
+      public Context mContext;
+
+      private static IVerify mVerifyService = null;
+      ServiceConnection serviceConnection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName name, IBinder service) {
+      mVerifyService = IVerify.Stub.asInterface(service);
+      Log.debug("Pvr_UE HMDXML connect ok");
+      }
+
+      @Override
+      public void onServiceDisconnected(ComponentName name) {
+      mVerifyService = null;
+      Log.debug("Pvr_UE HMDXML disconnected");
+      }
+      };
+
+      //public static IVerify getVerifyService(){
+      //return mVerifyService;
+      //}
+
+      public boolean AndroidThunkJava_verifyAPP(String appID,String publicKey){
+      //public static boolean AndroidThunkJava_verifyAPP(Activity mContext,String appID,String publicKey){
+      int result = -1;
+      if(appID == null &amp;&amp; publicKey == null){
+      Log.debug("Pvr_UE HMDXML invalid params");
+      return false;
+      }
+      IVerify service = mVerifyService;
+      if(service != null){
+      try {
+      service.verifyAsync(appID,this.getPackageName(),publicKey,mICallback);
+      Log.debug("Pvr_UE HMDXML getPackageName is " + this.getPackageName());
+      result = 1;
+      Log.debug("Pvr_UE HMDXML result = " + result);
+      } catch (Exception e) {
+      Log.debug("Pvr_UE HMDXML Exception " + e.toString());
+      }
+      }else{
+      Log.debug("Pvr_UE HMDXML verify service is null");
+      }
+      return (result == 1);
+      }
+
+      public native void nativePicoEntitlementVerifyCallback(int code);
+
+      public ICallback mICallback = new ICallback.Stub() {
+      @Override
+      public void callback(int code){
+      Log.debug("Pvr_UE HMDXML callback# " + Thread.currentThread().toString());
+      Log.debug("Pvr_UE HMDXML callback# code:" + code);
+      //TODO
+      nativePicoEntitlementVerifyCallback(code);
+      }
+      };
+
+
+      public void AndroidThunkJava_HideLoading()
+      {
+      if(loadingFragment!=null)
+      {
+      loadingFragment.destroy();
+      mhandler.postDelayed(new Runnable(){
+      @Override
+      public void run(){
+      if(loadingFragment!=null)
+      {
+      fragmentManager.beginTransaction().hide(loadingFragment).commit();
+      fragmentManager.beginTransaction().remove(loadingFragment).commit();
+      loadingFragment = null;
+      }
+      }
+      },0);
+      }
+      }
+
+      <!--Due to Add PicoGetControllerDeviceType Begin-->
+      public int GetDeviceType(){
+      int type = -1;
+      type = HbClientActivity.getDeviceType();
+      return type;
+
+      }
+      public int GetNeoDeviceType()
+      {
+      int type=-1;
+      type=ControllerClient.getType();
+      return type;
+      }
+      public int GetMainControllerConnectState()
+      {
+      int state = 0;
+      if(mainController!=null)
+      {
+      state = mainController.getConnectState();// 0-Disconnect,1-Connect
+      }
+      if(state == 1)
+      {
+      return 1;
+      }else
+      {
+      return 0;
+      }
+
+      }
+
+      public int GetSubControllerConnectState() {
+      int state = 0;
+      if(subController!=null)
+      {
+      state = subController.getConnectState();// 0-Disconnect,1-Connect
+      }
+      if(state == 1)
+      {
+      return 1;
+      }else
+      {
+      return 0;
+      }
+      }
+      <!--Due to Add PicoGetControllerDeviceType End-->
+
+      public VrActivity AndroidThunkJava_UEPvr_GetRawClass()
+      {
+      return vrActivity;
+      }
+
+      public double[] AndroidThunkJava_UEPvr_GetDPIParameters(Context context)
+      {
+      mContext = context;
+      return vrActivity.getDPIParameters(context);
+      }
+
+      public String AndroidThunkJava_UEPvr_GetBuildModel()
+      {
+      return vrActivity.Pvr_GetBuildModel();
+      }
+
+      public int AndroidThunkJava_UEPvr_GetCurrentBrightness()
+      {
+      int currentB = SysActivity.Pvr_GetCommonBrightness(this.getApplicationContext());
+      Log.debug("Pvr_UE HMDXML Current screen brightness:" + currentB);
+      return currentB;
+      }
+
+      //brightness: Screen brightness，0~255
+      //return true if succeed,false if failed
+      public boolean AndroidThunkJava_UEPvr_SetBrightness(int brightness)
+      {
+      boolean ret = false;
+      ret = SysActivity.Pvr_SetCommonBrightness(brightness,this.getApplicationContext());
+      Log.debug("Pvr_UE HMDXML Set brightness: " + (ret == true?"succeed":"failed"));
+      return ret;
+      }
+
+      public int AndroidThunkJava_UEPvr_GetCurrentVolume()
+      {
+      int currentV = SysActivity.Pvr_GetAudionumber();
+      Log.debug("Pvr_UE HMDXML Current system volume:" + currentV);
+      return currentV;
+      }
+
+      public int AndroidThunkJava_UEPvr_GetMaxVolumeNumber()
+      {
+      int maxV = SysActivity.Pvr_GetMaxAudionumber();
+      Log.debug("Pvr_UE HMDXML Max system volume:" + maxV);
+      return maxV;
+      }
+
+      public void AndroidThunkJava_UEPvr_SetVolume(int volume)
+      {
+      SysActivity.Pvr_ChangeAudio(volume);
+      }
+
+      public void AndroidThunkJava_UEPvr_VolumeUp()
+      {
+      SysActivity.Pvr_UpAudio();
+      }
+
+      public void AndroidThunkJava_UEPvr_VolumeDown()
+      {
+      SysActivity.Pvr_DownAudio();
+      }
+
+      public int AndroidThunkJava_UEPvr_GetHandness()
+      {
+      int handness = VrActivity.getPvrHandness(this.getApplicationContext());
+      Log.debug("Pvr_UE HMDXML Current controller handness:" + handness);
+      return handness;
+      }
+
+
+      public String AndroidThunkJava_UEPvr_GetDeviceSN() {
+      return SysActivity.getDeviceSN();
+      }
+
+      public boolean AndroidThunkJava_UEPvr_IsHead6dofReset() {
+      return SysActivity.isHead6dofReset(mContext);
+      }
+
+      <!--Override dispatchKeyEvent-->
+      @Override
+      public boolean dispatchKeyEvent(KeyEvent event)
+      {
+      int action = event.getAction();
+      if (event.getKeyCode()==1001){
+      Log.debug( "Pvr_UE HMDXML ======dispatchKeyEvent Finch 1001--->96");
+      keyRemappingSendFakeKeyEvent(action , 96);
+      }     
+      return super.dispatchKeyEvent(event);
+      }
+      
+      <!--Change keycode from 1001 to 96 for finch-->
+      private static void keyRemappingSendFakeKeyEvent(final int action,final int keyCode) {
+      new Thread(new Runnable() {
+      public void run() {
+      try {
+      Instrumentation inst=new Instrumentation();
+      //KeyEvent event = new KeyEvent(action,keyCode);
+      final long eventTime = SystemClock.uptimeMillis();
+      KeyEvent event =new KeyEvent(eventTime - 50, eventTime - 50, action, keyCode, 0, 0, 1001, 0, KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_GAMEPAD);
+      int id = event.getDeviceId();
+      Log.debug( "Pvr_UE HMDXML ======dispatchKeyEvent Finch 1001--->96  " + id);
+      inst.sendKeySync(event);
+      }  catch (Exception e) {
+      // TODO: handle exception
+      }}}).start();
+      }
+      
+      <!--Override onKeyUp to awake boundary setting app-->
+      @Override 
+      public boolean onKeyUp(int keyCode, KeyEvent event){
+      int dialogShow = PicovrSDK.GetDialogState();
+      Log.debug( "Pvr_UE HMDXML ======KeyCode = "+event.getKeyCode() + " dialogShow = "+ dialogShow);
+      if (SeeThroughSettingExist &amp;&amp; (dialogShow >= 0)) {
+      int midres = event.getKeyCode() + 999 * PicovrSDK.GetIntConfig(CALL_BY_CONFIRMKEY); // If Call by confirm, return 1; or, return 0.
+      int extra_type = (midres == KeyEvent.KEYCODE_VOLUME_DOWN) ? 1 : -1; // If not call_by_confirm, then midres = keyCode + 999 * 0.
+      extra_type = (midres == KeyEvent.KEYCODE_VOLUME_UP) ? 0 : extra_type;
+      extra_type = (midres == (1001 + 999)) ? 2 : extra_type;  // KEYCODE_CONFIRM = 1001, if call_by_confirm, then midres = 1001 + 999 * 1. psensor = 127
+      Log.debug( "Pvr_UE HMDXML ======midres = " + midres + ". finally, extra_type = " + extra_type);
+      <!--onLowMemory to save memory -->
+      PvrManager.getInstance(this).setSystemFeatures(30,"home");
+      Log.debug("Pvr_UE HMDXML ==============>setSystemFeatures(kill launcher)");
+      <!-- Call boundary setting -->
+      final Context lContext=this.getApplicationContext();
+      final int extra_type1=extra_type;
+      mhandler.postDelayed(new Runnable() {
+      public void run() {
+      // TODO Auto-generated method stub
+      VRDataUtils.Pvr_callSeeThroughSetting(lContext,extra_type1);
+      }
+      },500);
+
+      } else {
+      Log.debug( "Pvr_UE HMDXML ======Boundary Call SeeThrough Setting failed, is there this app?: "+ SeeThroughSettingExist +
+      ".   Is diaglog showed?: " + (dialogShow >= 0));
+      }
+      return super.onKeyUp(keyCode,event);
+      }
+
+      public void InitPSensor()
+      {
+      SysActivity.initPsensor(this);
+      }
+
+      public int AndroidThunkJava_UEPvr_GetPsensorState()
+      {
+      return SysActivity.getPsensorState();
+      }
+
+      public void UnRegisterPSensor()
+      {
+      SysActivity.unregisterListener();
+      }
+		 public void CreatePresentation()
+      {
+        Log.debug("Pvr_UE HMDXML CreatePresentation Begin");
+        mDisplayManager = (DisplayManager)getSystemService(DISPLAY_SERVICE);
+        Display[] presentationDisplays;
+        presentationDisplays = mDisplayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &amp;&amp; !Settings.canDrawOverlays(this)) 
+        {
+          Log.debug("Pvr_UE HMDXML UE Intent startActivity!");
+          Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+          intent.setData(Uri.parse("package:" + this.getPackageName()));
+          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+          this.startActivity(intent);
+        } else 
+        {
+          if ( presentationDisplays.length > 0 &amp;&amp; vrActivity.Pvr_GetWFDEnableStatus() == 1 )
+      {
+      if (mPresentation != null)
+      {
+      Log.debug("Pvr_UE HMDXML UE mPresentation already exist!");
+      }
+      else{
+      mPresentation = new ExternalDislayForUE(this.getApplicationContext(), presentationDisplays[0], null);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+      {
+      Log.debug("Pvr_UE HMDXML UE CreatePresentation TYPE_APPLICATION_OVERLAY!");
+      mPresentation.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+      } else
+      {
+      mPresentation.getWindow().setType(WindowManager.LayoutParams.TYPE_PHONE);
+      }
+      mPresentation.show();
+      Log.debug("Pvr_UE HMDXML UE CreatePresentation getSurfaceView");
+      mPresentationView = mPresentation.getSurfaceView();
+      }
+      }
+      }
+      Log.debug("Pvr_UE HMDXMLCreatePresentation End!");
+      }
+
+      public void DestoryPresentation()
+      {
+      Log.debug("Pvr_UE HMDXML DestoryPresentation Begin");
+      if ( mPresentation != null )
+      {
+      Log.debug("Pvr_UE HMDXML Presentation != null!");
+      mPresentationView.setVisibility(View.GONE);
+      mPresentationView = null;
+      mPresentation.dismiss();
+      mPresentation = null;
+      }
+      Log.debug("Pvr_UE HMDXML DestoryPresentation End");
+      }
+      
+    </insert>
+
+    <if condition="bEnablePaymentModule">
+      <true>
+        <insert>
+          private Login mLogin;
+          private AccessInfo mAccessInfo;
+          private MyPayCallBack mMyPayCallBack;
+          private MyQueryOrdersCallBack mMyQueryOrdersCallBack;
+
+          public native void nativePicoLogInOutCallback(boolean isSuccess, String reason);
+          public native void nativePicoGetUserInfoCompleteCallback(String info);
+          public native void nativePicoPayOrderCallback(String code, String msg);
+          public native void nativePicoPaymentExceptionCallback(String exception);
+          public native void nativePicoQueryOrdersCallback(String code, String msg);;
+          
+          public void AndroidThunkJava_UEPvr_Payment_Login()
+          {
+          if (mLogin != null) {
+          mLogin.login(new Callback() {
+          @Override
+          public void loginCallback(boolean isSuccess, String reason) {
+          nativePicoLogInOutCallback(isSuccess,reason);
+          }
+          });
+          }
+          else
+          {
+          Log.debug("Pvr_UE HMDXML Login class is not created!");
+          }
+          }
+
+          public void AndroidThunkJava_UEPvr_Payment_Logout()
+          {
+          if (mLogin != null) {
+          mLogin.logOut(this, new Callback() {
+          @Override
+          public void loginCallback(boolean isSuccess, String reason) {
+          nativePicoLogInOutCallback(isSuccess,reason);
+          }
+          });
+          }
+          else
+          {
+          Log.debug("Pvr_UE HMDXML Login class is not created!");
+          }
+          }
+
+
+          public void AndroidThunkJava_UEPvr_Payment_GetUserInfo()
+          {
+          if (mLogin != null) {
+          mLogin.getUserInfo(new RequestListener() {
+          @Override
+          public void onComplete(String paramString)
+          {
+          nativePicoGetUserInfoCompleteCallback(paramString);
+          }
+          @Override
+          public void onException(PicoException paramException) {
+          nativePicoPaymentExceptionCallback(paramException.getMessage());
+          }
+          });
+          }
+          else
+          {
+          Log.debug("Pvr_UE HMDXML Login class is not created!");
+          }
+          }
+
+          public void AndroidThunkJava_UEPvr_Payment_PayWithPayCode(String orderNumber, String orderTitle, String productDetail, String notifyUrl, String payCode)
+          {
+          //Log.debug(orderNumber + "//" + orderTitle + "//" + productDetail + "//" + notifyUrl + "//" + payCode);
+          PayOrder mOrder = new PayOrder();                             
+          mOrder.setBusinessOrder(orderNumber);             
+          mOrder.setSubject(orderTitle);                       
+          mOrder.setBody(productDetail);                          
+          mOrder.setNotifyUrl(notifyUrl);
+          mOrder.setPayCode(payCode);
+          PicoPay.getInstance(this).pay(mOrder,mMyPayCallBack);
+          }
+
+          public void AndroidThunkJava_UEPvr_Payment_PayWithCoin(String orderNumber, String orderTitle, String productDetail, String notifyUrl, int coinCount)
+          {
+          
+          //Log.debug(orderNumber + "//" + orderTitle + "//" + productDetail + "//" + notifyUrl + "//" + coinCount);
+          PayOrder mOrder = new PayOrder();                             
+          mOrder.setBusinessOrder(orderNumber);             
+          mOrder.setSubject(orderTitle);                       
+          mOrder.setBody(productDetail);                          
+          mOrder.setNotifyUrl(notifyUrl);
+          mOrder.setTotalFree(coinCount);
+          PicoPay.getInstance(this).pay(mOrder,mMyPayCallBack);     
+          }
+
+          public void AndroidThunkJava_UEPvr_Payment_QueryOrder(String orderNumber)
+          {        
+          PicoPay.getInstance(this).queryOrders(orderNumber,mMyQueryOrdersCallBack);  
+          }
+          
+          class MyPayCallBack implements PaySdkCallBack {
+          @Override
+          public void callback(String code, String msg) {
+          nativePicoPayOrderCallback(code,msg);
+          }
+          @Override
+          public void exceptionCallBack(String msg) {
+          nativePicoPaymentExceptionCallback(msg);
+          }
+          }
+          
+          class MyQueryOrdersCallBack implements PaySdkCallBack {
+          @Override
+          public void callback(String code, String msg) {
+          nativePicoQueryOrdersCallback(code,msg);
+          }
+          @Override
+          public void exceptionCallBack(String msg) {
+          nativePicoPaymentExceptionCallback(msg);
+          }
+          }
+        </insert>
+      </true>
+    </if>
+
+
+  </gameActivityClassAdditions>
+
+  <gameActivityOnCreateAdditions>
+    <insert>
+      Log.debug("Pvr_UE HMDXML gameActivityOnCreate");
+
+      VRResUtils.loadRes(this);
+      smsPhoneMonitor = new SmsPhoneMonitor(this);
+      smsPhoneMonitor.registeReciver();
+
+      Intent verifyIntent = new Intent(VRDataUtils.VERIFY_SERVCIE_ACTION);
+      verifyIntent.setPackage(VRDataUtils.VERIFY_SERVCIE_PKG);
+      try {
+      bindService(verifyIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+      }catch (Exception e){
+      Log.debug("Pvr_UE HMDXML bind " + e.toString());
+      }
+
+      VRConfigUtils.enableSafetyTip(false);
+      LoadingFragment.dismissSplashScreen(this);
+      loadingFragment = new LoadingFragment();
+      fragmentManager.beginTransaction().add(android.R.id.content,loadingFragment,"loading").commit();
+
+      View decorView = getWindow().getDecorView();
+      int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+      | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
+      decorView.setSystemUiVisibility(uiOptions);
+
+      SysActivity.Pvr_InitAudioDevice(this.getApplicationContext());
+
+      mDisplayManager = (DisplayManager)getSystemService(DISPLAY_SERVICE);
+
+      <!--get status about boundary && seethrough-->
+	    if(VRDataUtils.get2BGlobalBoundaryEnableStatus()==0
+          || VRDataUtils.getGlobalBoundaryEnableStatus()==0)
+        {
+            globalBoundaryStatus = 0 ;
+        }
+     appBoundaryStatus = VRDataUtils.getAppBoundaryEnableStatus(this); // 0  Disable boundary ,  -1,0 Enable Boundary 
+	   if(globalBoundaryStatus == 0 || appBoundaryStatus == 0){
+	   		PicovrSDK.disableBoundarySystem();} 
+	   mhandler = new Handler();
+     
+      <!--get status about if boudary app is installed-->
+      SeeThroughSettingExist = VRDataUtils.getSeeThroughSettingExist();
+      
+    </insert>
+
+    <if condition="bEnablePaymentModule">
+      <true>
+        <insert>
+          mLogin = new Login(this);
+          mMyPayCallBack = new MyPayCallBack();
+          mMyQueryOrdersCallBack = new MyQueryOrdersCallBack();
+        </insert>
+      </true>
+    </if>
+
+  </gameActivityOnCreateAdditions>
+
+  <gameActivityOnStartAdditions>
+    <insert>
+      Log.debug("Pvr_UE HMDXML gameActivityOnStartAdditions");
+      
+   
+      
+    </insert>
+  </gameActivityOnStartAdditions>
+   
+  <gameActivityOnResumeAdditions>
+    <insert>
+      mhandler.postDelayed(new Runnable() {
+      public void run() {
+      CreatePresentation();
+      }
+      },5);
+      Log.debug("Pvr_UE HMDXML gameActivityOnResumeAdditions");
+      if(loadingFragment!=null)
+      {
+      fragmentManager.beginTransaction().show(loadingFragment).commit();
+      }
+    </insert>
+    <if condition="bEnablePSensor">
+      <true>
+        <insert>
+          Log.debug("Pvr_UE HMDXML initPsensor!");
+          SysActivity.initPsensor(this);
+        </insert>
+      </true>
+    </if>
+    <insert>
+      vrActivity.Pvr_StartHomeKeyLongPressReceiver(this);
+    </insert>
+    <insert>
+	 if(globalBoundaryStatus!=0 &amp;&amp; appBoundaryStatus!=0 &amp;&amp; SeeThroughSettingExist){
+      boolean head6dofReset = SysActivity.isHead6dofReset(this);
+      boolean service6dofStopped = SysActivity.isService6dofStopped(this);
+      Log.debug("Pvr_UE HMDXML Boundary isHead6dofReset = "+head6dofReset+", service6dofStopped = "+service6dofStopped+".");
+      if(head6dofReset || service6dofStopped)
+      {
+      <!--onLowMemory to save memory -->
+      PvrManager.getInstance(this).setSystemFeatures(30,"home");
+      Log.debug("Pvr_UE HMDXML ==============>setSystemFeatures(kill launcher)");
+      <!-- Call boundary setting -->
+      final Context lContext=this.getApplicationContext();
+      mhandler.postDelayed(new Runnable() {
+      public void run() {
+      // TODO Auto-generated method stub
+      VRDataUtils.Pvr_callSeeThroughSetting(lContext,2);
+      }
+      },500);
+      }
+      }
+    </insert>
+  </gameActivityOnResumeAdditions>
+
+  <gameActivityOnPauseAdditions>
+    <insert>
+      Log.debug("Pvr_UE HMDXML gameActivityOnPauseAdditions");
+    </insert>
+    <if condition="bEnablePSensor">
+      <true>
+        <insert>
+          Log.debug("Pvr_UE HMDXML unregisterListener!");
+          SysActivity.unregisterListener();
+        </insert>
+      </true>
+    </if>
+    <insert>
+      vrActivity.Pvr_StopHomeKeyLongPressReceiver(this);
+    </insert>
+  </gameActivityOnPauseAdditions>
+
+  <gameActivityOnStopAdditions>
+    <insert>
+      Log.debug("Pvr_UE HMDXML gameActivityOnStopAdditions");
+      DestoryPresentation();
+    </insert>
+  </gameActivityOnStopAdditions>
+
+  <gameActivityOnDestroyAdditions>
+    <insert>
+      Log.debug("Pvr_UE HMDXML gameActivityOnDestroyAdditions");
+      smsPhoneMonitor.unRegisteReceiver();
+      unbindService(serviceConnection);
+    </insert>
+  </gameActivityOnDestroyAdditions>
+
+  <gameActivityOnActivityResultAdditions>
+    <if condition="bEnablePaymentModule">
+      <true>
+        <insert>
+          if (mLogin != null) {
+          mLogin.authorizeCallBack(requestCode, resultCode, data);
+          }
+        </insert>
+      </true>
+    </if>
+  </gameActivityOnActivityResultAdditions>
+
+  <!-- optional additions to proguard -->
+  <proguardAdditions>
+    <if condition="bEnablePaymentModule">
+      <true>
+        <insert>
+          -keep class com.pico.loginpaysdk.** { *; }
+        </insert>
+      </true>
+    </if>
+  </proguardAdditions>
+
+
+  <!-- optional libraries to load in GameActivity.java before libUE4.so -->
+  <soLoadLibrary>
+        <loadLibrary name="Pvr_UESDK" failmsg="PicoPlugin library not loaded and required!" />
+  </soLoadLibrary>
+</root>

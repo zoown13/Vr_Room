@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <init>
+    <log text="Pico Controller init"/>
+    <setBoolFromProperty result="bEnableHomeKey" ini="Engine" section="/Script/PicoMobile.PicoMobileSettings" property="enableHomeKey" default="true"/>
+  </init>
+
+  <resourceCopies>
+    <log text="Copying PicoVR Controller libs to staging"/>
+    <copyFile src="$S(PluginDir)/../../Libs/HbService.jar"	dst="$S(BuildDir)/libs/HbService.jar" />
+  </resourceCopies>
+
+  <androidManifestUpdates>
+    <addPermission android:name="android.permission.WRITE_SETTINGS"/>
+    <addPermission android:name="android.permission.BLUETOOTH"/>
+    <addPermission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <addPermission android:name="android.permission.INJECT_EVENTS"/>
+  </androidManifestUpdates>
+
+  <gameActivityImportAdditions>
+    <insert>
+      import com.picovr.client.HbController;
+      import com.picovr.client.HbListener;
+      import com.picovr.client.HbManager;
+      import com.picovr.client.HbTool;
+      import com.picovr.client.HbTool.HbButtonNum;
+      import com.picovr.client.HbTool.HbArmJoint;
+      import static java.security.AccessController.getContext;
+      import android.util.Log;
+      import com.psmart.vrlib.PicovrSDK;
+      import com.psmart.vrlib.VrActivity;
+      import com.picovr.picovrlib.hummingbirdclient.HbClientActivity;
+      import java.util.Timer;
+      import java.util.TimerTask;
+    </insert>
+  </gameActivityImportAdditions>
+
+  <gameActivityClassAdditions>
+    <insert>
+      public PicovrSDK picovrsdk;
+      public VrActivity vractivity;
+      private int configint;
+      private int sysprop;
+
+      public native void nativePicoCtrlerConnected();
+      public native void nativePicoCtrlerDisconnected();
+
+      //set controller data to plugin
+      //param:  ori_4 , orientation with 4 float elements
+      //param:  acc_3 , acceleration with 3 float elements
+      //param:  agl_3 , angular with 3 float elements
+      //param   keydata_8 , controller' s key data with 8 float elements
+      public native void nativePicoCtrlerSetControllerData(float[] ori_4,float[] acc_3, float[] agl_3, int[] keydata_8);
+      //public native void nativePicoRecenter();
+      private HbManager controllerManager = null;
+      public HbController controller = null;
+
+      private HbListener listener = new HbListener() {
+      @Override
+      public void onBindService() {
+      if(controller.getConnectState() == HbTool.STATE_CONNECTED)
+      {
+      controller.startUpdateThread();
+      nativePicoCtrlerConnected();
+      }
+      else if( controller.getConnectState() == HbTool.STATE_DISCONNECTED )
+      {
+      controller.stopUpdateThread();
+      nativePicoCtrlerDisconnected();
+      }
+      }
+      @Override
+      public void onConnect() {
+      controller.startUpdateThread();
+      nativePicoCtrlerConnected();
+      }
+      @Override
+      public void onDisconnect() {
+      controller.stopUpdateThread();
+      nativePicoCtrlerDisconnected();
+      }
+      @Override
+      public void onDataUpdate() {
+      //float ori[] = {
+      //controller.mOrientation.x,
+      //controller.mOrientation.y,
+      //controller.mOrientation.z,
+      //controller.mOrientation.w
+      //};
+      //Log.debug("Pvr_UE ControllerXML onDataUpdate0 controller "+controller.mOrientation.x+","+controller.mOrientation.y+","+controller.mOrientation.z+","+controller.mOrientation.w);
+      //nativePicoCtrlerSetControllerData(ori,controller.acc,controller.agl,controller.keyData);
+      }
+      @Override
+      public void onReCenter() {
+      //nativePicoRecenter();
+      }
+      };
+
+      public int apl_GetTriggerKeyEvent(){
+      return HbClientActivity.getTriggerKeyEvent();
+      }
+
+      public int apl_GetDeviceType(){
+      return HbClientActivity.getDeviceType();
+      }
+      public void resetHbSensorState(){
+      HbClientActivity.resetHbSensorState();
+      }
+
+      public int getControllerBatteryLevel(){
+      return controller.getBattaryLevel();
+      }
+
+      public int getHBConnectState()
+      {
+      int state = 0;
+      if(controller!=null)
+      {
+      state = controller.getConnectState();
+      }
+      if(state == 2)
+      {
+      //Log.debug("Pvr_UE ControllerXML getHBConnectState  "+state);
+      return 1;
+      }
+      else
+      {
+      //Log.debug("Pvr_UE ControllerXML getHBConnectState  "+state);
+      return 0;
+      }
+      }
+
+      public boolean getHBButtonState(int buttonNum) {
+      if(controller!=null)
+      return controller.getButtonState(HbButtonNum.values()[buttonNum]);// 0-home,1-back,2-touchpad,3-volUp,4-volDown
+      else return false;
+      }
+
+      public int[] GetHBControllerButtonEvent()
+      {
+      if(controllerManager!=null)
+      return controllerManager.getHbKeyEventUEExt();
+      else return new int[]{0};
+      }
+
+      public void setHBGazeType(int gazetype)
+      {
+      if(controller!=null)
+      controller.SetGazeType(gazetype);
+      }
+
+      public int getHBGazeType()
+      {
+      if(controller!=null)
+      return controller.GetGazeType();
+      else return 2;
+      }
+
+      public void setHBElbowHeight(float elbowheight)
+      {
+      if(controller!=null)
+      controller.SetElbowHeight(elbowheight);
+      }
+
+      public void setHBElbowDepth(float elbowdepth)
+      {
+      if(controller!=null)
+      controller.SetElbowDepth(elbowdepth);
+      }
+
+      public void setHBPointerTiltAngle(float pointertiltangle)
+      {
+      if(controller!=null)
+      controller.SetPointerTiltAngle(pointertiltangle);
+      }
+
+      public float[] getHBArmModelParm(){
+      if(controller!=null)
+      {
+      float[] parm;
+      parm = controller.GetArmModelParm();
+      return parm;
+      }
+      else return new float[]{0.0f, 0.0f, 0.0f};
+      }
+
+      public void setHBArmJoint(int armJoint){
+      if(controller!=null)
+      controller.SetArmJoint(HbArmJoint.values()[armJoint]);//0-Controller,1-Wrist,2-Elbow,3-Shoulder
+      }
+
+      public float[] getHBOrientation() {
+      if(controller!=null)
+      {
+      return new float[]{controller.getOrientation().x,controller.getOrientation().y,controller.getOrientation().z,controller.getOrientation().w};
+      }
+      else
+      {
+      return new float[]{0.0f,0.0f,0.0f,0.0f};
+      }
+      }
+
+      public void getHBOrientation(float[] orientation) {
+      if(controller!=null)
+      {
+      orientation = new float[]{controller.getOrientation().x,controller.getOrientation().y,controller.getOrientation().z,controller.getOrientation().w};
+      }
+      }
+
+      public float[] getHBPosition() {
+      if (controller != null) {
+      float[] tempPosition;
+      tempPosition = controller.getPosition();
+      if (Double.isNaN(tempPosition[0]) || Double.isNaN(tempPosition[1]) || Double.isNaN(tempPosition[2])) {
+      tempPosition[0] = tempPosition[1] = tempPosition[2] = 0;
+      Log.debug("Pvr_UE ControllerXML Position NaN!");
+      }
+      return tempPosition;
+      } else return new float[]{0.0f, 0.0f, 0.0f};
+      }
+
+      public float[] getHBAcc() {
+      //if(controller!=null)
+      //return controller.getAccel();// x,y,z
+      //else return new float[]{0.0f,0.0f,0.0f};
+      return new float[]{0.0f,0.0f,0.0f};
+      }
+
+      public float[] getHBAgl() {
+      //if(controller!=null)
+      //return controller.getAngular();// x,y,z
+      //else return new float[]{0.0f,0.0f,0.0f};
+      return new float[]{0.0f,0.0f,0.0f};
+      }
+
+      public int[] getHBTouchPad() {
+      if(controller!=null)
+      return controller.getTouchPosition();// int[2],x,y
+      else return new int[]{0,0};
+      }
+    </insert>
+
+    <if condition="bEnableHomeKey">
+      <true>
+        <insert>
+          public void configureHomeKey(){
+          HbClientActivity.setIsEnbleHomeKey(true);
+          Log.debug("Pvr_UE ControllerXML  setIsEnbleHomeKey:true");
+          }
+        </insert>
+      </true>
+      <false>
+        <insert>
+          public void configureHomeKey(){
+          HbClientActivity.setIsEnbleHomeKey(false);
+          Log.debug("Pvr_UE ControllerXML  setIsEnbleHomeKey:false");
+          }
+        </insert>
+      </false>
+    </if>
+
+    <insert>
+      public void resetHomeKey(){
+      HbClientActivity.setIsEnbleHomeKey(true);
+      Log.debug("Pvr_UE ControllerXML  setIsEnbleHomeKey:true");
+      }
+    </insert>
+    
+  </gameActivityClassAdditions>
+
+  <gameActivityOnResumeAdditions>
+    <insert>
+      Log.debug("Pvr_UE ControllerXML  onResume");
+      if(configint==0||configint==1||(configint==3&amp;&amp;sysprop==1))
+      {
+      controller.UpdateHandness();
+      }
+
+    </insert>
+  </gameActivityOnResumeAdditions>
+
+
+  <gameActivityOnPauseAdditions>
+    <insert>
+      Log.debug("Pvr_UE ControllerXML  onPause");
+    </insert>
+  </gameActivityOnPauseAdditions>
+  
+  <gameActivityOnCreateAdditions>
+    <insert>
+      configint = picovrsdk.getIntConfig(26); //0:default hb 1:hb 2:cv 3:all
+
+      String trackmodev = vractivity.getSysprop("persist.pvr.sdk.trackingmode");
+      try
+      {
+      sysprop = Integer.parseInt(trackmodev);
+      }
+      catch(Exception e)
+      {
+      sysprop = 0;
+      }
+
+      if(configint==0||configint==1||(configint==3&amp;&amp;sysprop==1))
+      {
+      controllerManager = new HbManager(this.getApplicationContext());
+      controllerManager.InitServices();
+      controllerManager.setHbListener(listener);
+      controller = controllerManager.getHbController();
+      }
+
+    </insert>
+  </gameActivityOnCreateAdditions>
+
+  <gameActivityOnStartAdditions>
+    <insert>
+      if(configint==0||configint==1||(configint==3&amp;&amp;sysprop==1))
+      {
+      controllerManager.Resume();
+      Log.debug("Pvr_UE ControllerXML  onStart");
+      new Timer().schedule(new TimerTask(){
+      public void run() {
+      configureHomeKey();
+      }}, 500);
+      }
+    </insert>
+  </gameActivityOnStartAdditions>
+
+  <gameActivityOnStopAdditions>
+    <insert>
+      Log.debug("Pvr_UE ControllerXML  onStop");
+
+      if(configint==0||configint==1||(configint==3&amp;&amp;sysprop==1))
+      {
+      resetHomeKey();
+
+      controller.stopUpdateThread();
+      controllerManager.Pause();
+      }
+    </insert>
+  </gameActivityOnStopAdditions>
+
+  <gameActivityOnDestroyAdditions>
+    <insert>
+    </insert>
+  </gameActivityOnDestroyAdditions>
+
+  <!-- optional libraries to load in GameActivity.java before libUE4.so -->
+  <soLoadLibrary>
+    <loadLibrary name="HummingBird" failmsg="Pico Controller library not loaded and required!" />
+  </soLoadLibrary>
+</root>
