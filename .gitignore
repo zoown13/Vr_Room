@@ -75,3 +75,4 @@ DerivedDataCache/*
 
 # Package apk files
 *.apk
+*.bat
